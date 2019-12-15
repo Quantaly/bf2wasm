@@ -2,6 +2,7 @@ pub mod parser;
 pub mod wasm;
 
 pub use parser::parse;
+pub use wasm::compile_wasm;
 
 /// Elements of Brainfuck's syntax.
 #[derive(Debug, PartialEq)]

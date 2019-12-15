@@ -52,30 +52,22 @@ const WASM_PRELUDE: &'static [u8] = &[
 pub fn compile_wasm(ast: Vec<BrainfuckSyntax>, output: &mut impl Write) -> io::Result<()> {
     output.write_all(WASM_PRELUDE)?;
 
-    let mut func_body = Vec::new();
-    emit_func_body(ast, &mut func_body)?;
-    func_body.push(end()[0]);
-    let section_len = func_body.len() + 5;
-    let func_len = section_len - 2;
-
-    let section_len = u32_leb128(section_len.try_into().unwrap());
-    let func_len = u32_leb128(func_len.try_into().unwrap());
-    output.write_all(&[
-        /* code section */
-        0x0a, // id
-    ])?;
-    // code section byte length
-    output.write_all(&section_len)?;
-    output.write_all(&[
-        0x01, // function vector length
-    ])?;
-    // func 2: byte length
-    output.write_all(&func_len)?;
-    output.write_all(&[
+    let mut func = vec![
         0x01, // locals vector length
         0x01, 0x7f, // one local of type i32
-    ])?;
-    output.write_all(&func_body)?;
+    ];
+    emit_func_body(ast, &mut func)?;
+    func.push(end()[0]);
+    let func_len = u32_leb128(func.len().try_into().unwrap());
+
+    let section_len = u32_leb128((func.len() + func_len.len() + 1).try_into().unwrap());
+
+    output.write_all(&[0x0a])?; // code section id
+    output.write_all(&section_len)?; // code section length
+    output.write_all(&[0x01])?; // function vector length
+    output.write_all(&func_len)?; // function 2 byte length (0 and 1 are the imports)
+    output.write_all(&func)?; // function 2 contents
+
     Ok(())
 }
 
@@ -84,7 +76,7 @@ fn emit_func_body(ast: Vec<BrainfuckSyntax>, output: &mut impl Write) -> io::Res
         match syntax {
             MovePointer(value) => {
                 output.write_all(&local_get(0))?;
-                output.write_all(&i32_const(value))?;
+                output.write_all(&i32_const(value * 4))?; // stay i32-aligned
                 output.write_all(&i32_add())?;
                 output.write_all(&local_set(0))?;
             }

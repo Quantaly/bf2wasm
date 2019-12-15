@@ -21,6 +21,18 @@ pub enum ParseError {
     IoError(Error),
 }
 
+impl std::fmt::Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        f.write_str(
+            &(match self {
+                ParseError::SyntaxError(msg) => format!("syntax error: {}", msg),
+                ParseError::IoError(err) => format!("IO error: {}", err),
+            })[..],
+        )?;
+        Ok(())
+    }
+}
+
 impl From<Error> for ParseError {
     fn from(err: Error) -> ParseError {
         ParseError::IoError(err)
@@ -30,13 +42,15 @@ impl From<Error> for ParseError {
 #[test]
 fn test_parsing() -> Result<(), ParseError> {
     use std::io::Cursor;
-    let actual = parse(&mut Cursor::new(",.>+++++[.-]"))?;
+    let actual = parse(&mut Cursor::new(",.>+++++[.-]<."))?;
     let expected = vec![
         Input,
         Output,
         MovePointer(1),
         ModifyValue(5),
         Loop(vec![Output, ModifyValue(-1)]),
+        MovePointer(-1),
+        Output,
     ];
     assert_eq!(expected, actual);
     Ok(())
