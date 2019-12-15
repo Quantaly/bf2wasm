@@ -11,7 +11,23 @@ pub fn parse(input: &mut impl Read) -> Result<Vec<BrainfuckSyntax>, ParseError> 
         // should absolutely EOF here
         Err(ParseError::SyntaxError(String::from("unbalanced brackets")))
     } else {
-        Ok(inner_result.0)
+        let mut result = inner_result.0;
+        // Optimize away initial comment loops.
+        let mut i = 0;
+        while i < result.len()
+            && match result[i] {
+                Loop(_) => true,
+                _ => false,
+            }
+        {
+            i += 1;
+        }
+        if i == 0 {
+            Ok(result)
+        } else {
+            let ret = result.split_off(i);
+            Ok(ret)
+        }
     }
 }
 
@@ -101,6 +117,34 @@ fn test_parsing_weird_chars() -> Result<(), ParseError> {
     let actual = parse(&mut Cursor::new("Hey, what's 9 + 10? 21. ;)"))?;
     let expected = vec![Input, ModifyValue(1), Output];
     assert_eq!(expected, actual);
+    Ok(())
+}
+
+#[test]
+fn test_remove_initial_comment_loop() -> Result<(), ParseError> {
+    use std::io::Cursor;
+    let actual = parse(&mut Cursor::new(
+        "[this loop is useless, it shouldn't be preserved.]++.",
+    ))?;
+    let expected = vec![ModifyValue(2), Output];
+    assert_eq!(expected, actual);
+    Ok(())
+}
+
+#[test]
+fn test_empty() -> Result<(), ParseError> {
+    use std::io::Cursor;
+    let expected = vec![];
+
+    let actual = parse(&mut Cursor::new(""))?;
+    assert_eq!(&actual, &expected);
+
+    let actual = parse(&mut Cursor::new("hewwo"))?;
+    assert_eq!(&actual, &expected);
+
+    let actual = parse(&mut Cursor::new("[this. is. stupid.]"))?;
+    assert_eq!(&actual, &expected);
+
     Ok(())
 }
 
