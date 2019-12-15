@@ -5,7 +5,7 @@ use std::io::prelude::*;
 use std::io::Error;
 
 /// Parses a Brainfuck program read from [input].
-pub fn parse<T: Read>(input: &mut T) -> Result<Vec<BrainfuckSyntax>, ParseError> {
+pub fn parse(input: &mut impl Read) -> Result<Vec<BrainfuckSyntax>, ParseError> {
     let inner_result = _parse(input)?;
     if !inner_result.1 {
         // should absolutely EOF here
@@ -134,7 +134,7 @@ fn character_codes_correct() {
 /// calling itself recursively to handle loops. The [bool] returned in the tuple should be `true` iff
 /// the function returned because there were no characters left to read from the input; it should otherwise
 /// return if it encounters a closing bracket.
-fn _parse<T: Read>(input: &mut T) -> Result<(Vec<BrainfuckSyntax>, bool), ParseError> {
+fn _parse(input: &mut impl Read) -> Result<(Vec<BrainfuckSyntax>, bool), ParseError> {
     let mut ret = Vec::new();
     let mut current_instr: Option<BrainfuckSyntax> = None;
     let mut current_byte = [0u8; 1];
