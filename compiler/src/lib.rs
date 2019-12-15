@@ -1,4 +1,5 @@
 pub mod parser;
+pub mod wasm;
 
 pub use parser::parse;
 
@@ -21,6 +22,9 @@ pub enum BrainfuckSyntax {
 #[test]
 fn syntax_equality() {
     use BrainfuckSyntax::*;
-    assert_eq!(vec![Input, Output, MovePointer(4), Loop(vec![Input])], vec![Input, Output, MovePointer(4), Loop(vec![Input])]);
+    assert_eq!(
+        vec![Input, Output, MovePointer(4), Loop(vec![Input])],
+        vec![Input, Output, MovePointer(4), Loop(vec![Input])]
+    );
     assert_ne!(vec![Output, Input], vec![Input, Output]);
 }
