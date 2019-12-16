@@ -88,6 +88,8 @@ pub trait SizeDependentInstructions {
     fn isz_store(&self) -> Vec<u8>;
     /// Hey, did you know that `if`s and stuff in Wasm only accept `i32`s and not `i64`s?
     fn ne_zero(&self) -> Vec<u8>;
+    fn isz_to_i32(&self) -> Vec<u8>;
+    fn i32_to_isz(&self) -> Vec<u8>;
 }
 
 impl SizeDependentInstructions for CellSize {
@@ -143,6 +145,20 @@ impl SizeDependentInstructions for CellSize {
     fn ne_zero(&self) -> Vec<u8> {
         match self {
             CellSize::I64 => vec![0x50, 0x45], // i64.eqz; i32.eqz // invert it twice
+            _ => vec![],
+        }
+    }
+
+    fn isz_to_i32(&self) -> Vec<u8> {
+        match self {
+            CellSize::I64 => vec![0xa7], // i32.wrap_i64
+            _ => vec![],
+        }
+    }
+
+    fn i32_to_isz(&self) -> Vec<u8> {
+        match self {
+            CellSize::I64 => vec![0xad], // i64.extend_i32_u
             _ => vec![],
         }
     }

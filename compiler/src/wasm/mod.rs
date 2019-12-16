@@ -15,14 +15,14 @@ const WASM_PRELUDE: &'static [u8] = &[
     0x01, 0x00, 0x00, 0x00, // version
 ];
 
-/*const TYPE_SECTION: &'static [u8] = &[
+const TYPE_SECTION: &'static [u8] = &[
     0x01, // id
     0x0c, // byte length
     0x03, // vec length
     0x60, 0x00, 0x01, 0x7f, // type 0: () -> (i32)
     0x60, 0x01, 0x7f, 0x00, // type 1: (i32) -> ()
     0x60, 0x00, 0x00, // type 2: () -> ()
-];*/
+];
 
 const IMPORT_SECTION: &'static [u8] = &[
     0x02, // id
@@ -67,30 +67,7 @@ pub fn compile_wasm(
     output: &mut impl Write,
 ) -> io::Result<()> {
     output.write_all(WASM_PRELUDE)?;
-
-    /* type section */
-    output.write_all(&[
-        0x01, // id
-        0x0c, // byte length - constant
-        0x03, // vec length
-    ])?;
-    output.write_all(&match options.cell_size {
-        CellSize::I64 => [
-            // type 0: () -> (i64)
-            0x60, 0x00, 0x01, 0x7e,
-            // type 1: (i64) -> ()
-            0x60, 0x01, 0x7e, 0x00,
-        ],
-        // everything else uses i32s
-        _ => [
-            // type 0: () -> (i32)
-            0x60, 0x00, 0x01, 0x7f,
-            // type 1: (i32) -> ()
-            0x60, 0x01, 0x7f, 0x00,
-        ]
-    })?;
-    output.write_all(&[0x60, 0x00, 0x00])?; // type 2: () -> ()
-
+    output.write_all(TYPE_SECTION)?;
     output.write_all(IMPORT_SECTION)?;
     output.write_all(FUNCTION_SECTION)?;
 
@@ -154,11 +131,13 @@ fn emit_func_body(
             Output => {
                 output.write_all(&local_get(0))?;
                 output.write_all(&sz.isz_load())?;
+                output.write_all(&sz.isz_to_i32())?;
                 output.write_all(&call(1))?; // <io.write_value>
             }
             Input => {
                 output.write_all(&local_get(0))?;
                 output.write_all(&call(0))?; // <io.read_value>
+                output.write_all(&sz.i32_to_isz())?;
                 output.write_all(&sz.isz_store())?;
             }
             Loop(contents) => {
