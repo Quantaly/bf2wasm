@@ -23,12 +23,20 @@ function canonicalOptions(options: CompilerOptions | undefined): CanonicalOption
     }
 }
 
+/**
+ * Compiles the provided Brainfuck program to a binary WebAssembly file.
+ * 
+ * The resolution of the returned `Promise` can be passed directly to `WebAssembly.compile` or `WebAssembly.instantiate`.
+ */
 export async function compileBrainfuck(program: string, options?: CompilerOptions): Promise<Uint8Array> {
     await initPromise;
     const canon = canonicalOptions(options);
     return compile_brainfuck(program, canon.numCells, canon.cellSize);
 }
 
+/**
+ * Compiles the provided Brainfuck program to a `WebAssembly.Module`.
+ */
 export async function compileBrainfuckToModule(program: string, options?: CompilerOptions): Promise<WebAssembly.Module> {
     return WebAssembly.compile(await compileBrainfuck(program, options));
 }
