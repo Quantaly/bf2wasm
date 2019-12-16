@@ -14,17 +14,17 @@ struct Cli {
     infile: PathBuf,
     #[structopt(parse(from_os_str))]
     /// The file to write output to
-    /// 
+    ///
     /// Defaults to the same name as the input file, but with ".wasm" as the extension.
     outfile: Option<PathBuf>,
     #[structopt(short, long)]
     /// The minimum number of cells potentially available to the program
-    /// 
+    ///
     /// The program may have more cells, but not fewer. Defaults to 32,768.
     num_cells: Option<u32>,
     #[structopt(short = "s", long, parse(try_from_str = try_parse_cell_size))]
     /// The size of a cell, in bits - one of "8", "16", "32", "64"
-    /// 
+    ///
     /// Defaults to 32.
     cell_size: Option<CellSize>,
 }
