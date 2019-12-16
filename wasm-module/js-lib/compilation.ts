@@ -1,4 +1,4 @@
-import init, { compile_brainfuck } from "./pkg/wasm_module.js";
+import init, { compile_brainfuck } from "./wasm/wasm_module.js";
 
 const initPromise = init();
 

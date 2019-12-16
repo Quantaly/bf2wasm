@@ -1,5 +1,5 @@
-import * as bfc from "./compilation.js";
-import * as bfi from "./invocation.js";
+import * as bfc from "./js-lib/compilation.js";
+import * as bfi from "./js-lib/invocation.js";
 
 (async function () {
     const mod = await bfc.compileBrainfuckToModule(",.>+++++[.-]<.");

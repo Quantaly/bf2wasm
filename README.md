@@ -1,7 +1,7 @@
 # bf2wasm
 A compiler from [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) to [WebAssembly](https://webassembly.org/).
 
-Generated modules import two functions, `io.read_value` and `io.write_value`, that provide the functionality of the `,` and `.` Brainfuck commands, respectively. The Brainfuck program is compiled into the module's "start function" and so is run immediately when the module is instantiated. There is also a [TypeScript module](https://github.com/Quantaly/bf2wasm/blob/master/wasm-module/invocation.ts) that abstracts away all of that with nice wrapper functions.
+Generated modules import two functions, `io.read_value` and `io.write_value`, that provide the functionality of the `,` and `.` Brainfuck commands, respectively. The Brainfuck program is compiled into the module's "start function" and so is run immediately when the module is instantiated. There is also a [TypeScript module](https://github.com/Quantaly/bf2wasm/blob/master/wasm-module/js-lib/invocation.ts) that abstracts away all of that with nice wrapper functions.
 
 It is heavily recommended that generated modules be passed through an external optimizer (such as `wasm-opt` from [WebAssembly/binaryen](https://github.com/WebAssembly/binaryen/)) before deployment to production. It is even heavierly recommended that you find a better language than Brainfuck to use in production.
 
