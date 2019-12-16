@@ -13,3 +13,5 @@ It is heavily recommended that generated modules be passed through an external o
 
 ## "Nice Brainfuck" compliance
 To the fullest extent possible, this compiler complies with Brian Raiter's [guidelines for "nice" Brainfuck implementations](https://www.muppetlabs.com/~breadbox/bf/standards.html). The exception is that there is no defined behavior on EOF. The `,` command directly calls the imported `io.read_value` function and places its return value in the cell at the pointer. Therefore, any EOF behavior must be defined by the external implementation of `io.read_value`.
+
+It is also technically possible, when using `--cell-size=64` and a sufficiently low `--num-cells`, to end up with a cell array smaller than Raiter's minimum length of 9999. Because it takes a very specific conjunction of compiler options to reach this state, it can be considered intentional. Consider this your warning, if you must; you reap what you sow.

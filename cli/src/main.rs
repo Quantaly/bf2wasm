@@ -53,6 +53,14 @@ fn main() {
 
 fn _main() -> i32 {
     let opt = Cli::from_args();
+
+    if let Some(size) = opt.num_cells {
+        if size == 0 {
+            eprintln!("please do not specify --num-cells=0");
+            return exitcode::USAGE;
+        }
+    }
+
     let infile = match File::open(&opt.infile) {
         Ok(f) => f,
         Err(e) => {
