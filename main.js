@@ -25,8 +25,17 @@ function enableEverything() {
     input.disabled = false;
     runButton.disabled = false;
 }
-runButton.addEventListener("click", async (_) => {
+async function withEverythingDisabled(run) {
     disableEverything();
+    try {
+        const ret = await run();
+        return ret;
+    }
+    finally {
+        enableEverything();
+    }
+}
+runButton.addEventListener("click", _ => withEverythingDisabled(async () => {
     if (!cached) {
         status.innerText = "Compiling...";
         try {
@@ -36,13 +45,18 @@ runButton.addEventListener("click", async (_) => {
         catch (e) {
             status.innerText = "Error compiling";
             output.value = "" + e;
-            enableEverything();
             return;
         }
     }
     status.innerText = "Running...";
-    output.value = await bfi.runBrainfuckWithStringBuffers(moduleCache, input.value, zeroEof.checked ? 0 : -1);
-    enableEverything();
+    try {
+        output.value = await bfi.runBrainfuckWithStringBuffers(moduleCache, input.value, zeroEof.checked ? 0 : -1);
+    }
+    catch (e) {
+        status.innerText = "Runtime error";
+        output.value = "" + e;
+        return;
+    }
     status.innerText = "Done";
-});
+}));
 //# sourceMappingURL=main.js.map
