@@ -36,6 +36,7 @@ runButton.addEventListener("click", async (_) => {
         catch (e) {
             status.innerText = "Error compiling";
             output.value = "" + e;
+            enableEverything();
             return;
         }
     }
