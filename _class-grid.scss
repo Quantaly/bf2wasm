@@ -1,0 +1,7 @@
+@mixin for($classes...) {
+    @each $class in $classes {
+        .#{$class} {
+            grid-area: #{$class};
+        }
+    }
+}

@@ -1,7 +1,0 @@
-[workspace]
-
-members = [
-    "compiler",
-    "cli",
-    "wasm-module",
-]

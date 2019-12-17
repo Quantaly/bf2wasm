@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="styles.css">
+    <title>Document</title>
+    <script type="module" src="main.js"></script>
+</head>
+
+<body>
+    <h1>Brainfuck-WASM</h1>
+    <nav>
+        <a href="https://en.wikipedia.org/wiki/Brainfuck">Brainfuck on Wikipedia</a>
+        <a href="https://github.com/Quantaly/bf2wasm">GitHub repository</a>
+    </nav>
+
+    <main>
+        <div class="grid-container">
+            <div class="area-program">
+                <div><label for="program">Program</label></div>
+                <textarea id="program"></textarea>
+            </div>
+            <div class="area-controls">
+                <div class="controls-buttons">
+                    <button id="run">Run</button>
+                    <!--TODO allow user to terminate program, specify cell + array sizes-->
+                </div>
+                <div class="controls-status">Ready</div>
+            </div>
+            <div class="area-input">
+                <div><label for="input">Input</label></div>
+                <textarea id="input"></textarea>
+                <div>
+                    <fieldset>
+                        <legend>EOF value</legend>
+
+                        <input type="radio" name="eof" id="neg-one" checked>
+                        <label for="neg-one">-1</label>
+
+                        <input type="radio" name="eof" id="zero">
+                        <label for="zero">0</label>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="area-output">
+                <div><label for="output">Output</label></div>
+                <textarea id="output" disabled></textarea>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
