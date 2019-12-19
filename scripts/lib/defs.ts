@@ -1,10 +1,12 @@
 /// Represents a request made to a worker to compile and/or run a program.
 export interface WorkerRequest {
-    readonly program: string | WebAssembly.Module,
+    readonly program: WorkerProgram,
     readonly input: string,
     readonly afterEmpty: number,
-    readonly bfMod: WebAssembly.Module,
 }
+
+/// Represents a program and/or the means to compile it.
+export type WorkerProgram = { text: string, bfMod: WebAssembly.Module } | WebAssembly.Module;
 
 /// The possible statuses of a running program.
 export const enum ProgramStatus {
@@ -51,7 +53,15 @@ export class WorkerWrapper {
                     this.resolveEnded();
                 }
             });
-            bfModPromise.then(bfMod => this.worker.postMessage({ program, input, afterEmpty, bfMod }));
+            if (program instanceof WebAssembly.Module) {
+                const msg: WorkerRequest = { program, input, afterEmpty };
+                this.worker.postMessage(msg);
+            } else {
+                bfModPromise.then(bfMod => {
+                    const msg: WorkerRequest = { program: { text: program, bfMod }, input, afterEmpty };
+                    this.worker.postMessage(msg);
+                });
+            }
         }, { once: true });
     }
 

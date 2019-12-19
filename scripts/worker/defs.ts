@@ -1,10 +1,12 @@
 /// Represents a request made to a worker to compile and/or run a program.
 interface WorkerRequest {
-    readonly program: string | WebAssembly.Module,
+    readonly program: WorkerProgram,
     readonly input: string,
     readonly afterEmpty: number,
-    readonly bfMod: WebAssembly.Module,
 }
+
+/// Represents a program and/or the means to compile it.
+type WorkerProgram = { text: string, bfMod: WebAssembly.Module } | WebAssembly.Module;
 
 /// The possible statuses of a running program.
 const enum ProgramStatus {
