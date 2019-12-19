@@ -1,7 +1,7 @@
 /** 
  * Runs the provided module, using the provided callbacks as the imports expected by a Brainfuck program.
  */
-export async function runBrainfuckWithCallbacks(mod: WebAssembly.Module, readCallback: () => number, writeCallback: (i32: number) => void): Promise<void> {
+async function runBrainfuckWithCallbacks(mod: WebAssembly.Module, readCallback: () => number, writeCallback: (i32: number) => void): Promise<void> {
     await WebAssembly.instantiate(mod, { io: { read_value: readCallback, write_value: writeCallback } });
 }
 
@@ -10,7 +10,7 @@ export async function runBrainfuckWithCallbacks(mod: WebAssembly.Module, readCal
  * 
  * Output is collected into an array of `Number`s.
  */
-export async function runBrainfuckWithBuffers(mod: WebAssembly.Module, readBuffer: number[], afterEmpty: number): Promise<number[]> {
+async function runBrainfuckWithBuffers(mod: WebAssembly.Module, readBuffer: number[], afterEmpty: number): Promise<number[]> {
     let bufferPos = 0;
     const read_value = () => {
         if (bufferPos < readBuffer.length) {
@@ -33,7 +33,7 @@ export async function runBrainfuckWithBuffers(mod: WebAssembly.Module, readBuffe
  * 
  * Output is collected into a `String`.
  */
-export async function runBrainfuckWithStringBuffers(mod: WebAssembly.Module, readBuffer: string, afterEmpty: number): Promise<string> {
+async function runBrainfuckWithStringBuffers(mod: WebAssembly.Module, readBuffer: string, afterEmpty: number): Promise<string> {
     let bufferPos = 0;
     const read_value = () => {
         if (bufferPos < readBuffer.length) {
