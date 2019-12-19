@@ -19,7 +19,16 @@ export class WorkerWrapper {
                     this.resolveEnded();
                 }
             });
-            bfModPromise.then(bfMod => this.worker.postMessage({ program, input, afterEmpty, bfMod }));
+            if (program instanceof WebAssembly.Module) {
+                const msg = { program, input, afterEmpty };
+                this.worker.postMessage(msg);
+            }
+            else {
+                bfModPromise.then(bfMod => {
+                    const msg = { program: { text: program, bfMod }, input, afterEmpty };
+                    this.worker.postMessage(msg);
+                });
+            }
         }, { once: true });
     }
     get ended() {
