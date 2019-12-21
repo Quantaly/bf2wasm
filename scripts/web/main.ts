@@ -7,6 +7,7 @@ const outputArea = document.querySelector("#output") as HTMLTextAreaElement;
 const runButton = document.querySelector("#run") as HTMLButtonElement;
 const stopButton = document.querySelector("#stop") as HTMLButtonElement;
 const zeroEof = document.querySelector("#zero") as HTMLInputElement;
+const negOneEof = document.querySelector("#neg-one") as HTMLInputElement;
 
 const statusDiv = document.querySelector(".controls-status") as HTMLDivElement;
 
@@ -21,6 +22,14 @@ programArea.addEventListener("input", _ => {
 });
 
 inputArea.addEventListener("input", _ => {
+    statusDiv.innerText = "Ready";
+});
+
+zeroEof.addEventListener("input", _ => {
+    statusDiv.innerText = "Ready";
+});
+
+negOneEof.addEventListener("input", _ => {
     statusDiv.innerText = "Ready";
 });
 
@@ -80,28 +89,6 @@ runButton.addEventListener("click", _ => withEverythingDisabled(async () => {
             },
         });
     await currentWorker.ended;
-
-    /*if (!cached) {
-        statusDiv.innerText = "Compiling...";
-        try {
-            moduleCache = await bfc.compileBrainfuckToModule(program.value);
-            cached = true;
-        } catch (e) {
-            statusDiv.innerText = "Error compiling";
-            output.value = "" + e;
-            return;
-        }
-    }
-
-    statusDiv.innerText = "Running...";
-    try {
-        output.value = await bfi.runBrainfuckWithStringBuffers(moduleCache, input.value, zeroEof.checked ? 0 : -1);
-    } catch (e) {
-        statusDiv.innerText = "Runtime error";
-        output.value = "" + e;
-        return;
-    }
-    statusDiv.innerText = "Done";*/
 }));
 
 stopButton.addEventListener("click", _ => currentWorker?.terminate());

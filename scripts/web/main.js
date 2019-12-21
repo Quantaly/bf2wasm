@@ -5,6 +5,7 @@ const outputArea = document.querySelector("#output");
 const runButton = document.querySelector("#run");
 const stopButton = document.querySelector("#stop");
 const zeroEof = document.querySelector("#zero");
+const negOneEof = document.querySelector("#neg-one");
 const statusDiv = document.querySelector(".controls-status");
 let moduleCache;
 let cached = false;
@@ -14,6 +15,12 @@ programArea.addEventListener("input", _ => {
     statusDiv.innerText = "Ready";
 });
 inputArea.addEventListener("input", _ => {
+    statusDiv.innerText = "Ready";
+});
+zeroEof.addEventListener("input", _ => {
+    statusDiv.innerText = "Ready";
+});
+negOneEof.addEventListener("input", _ => {
     statusDiv.innerText = "Ready";
 });
 function disableEverything() {
