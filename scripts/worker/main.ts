@@ -2,7 +2,7 @@ addEventListener("message", async event => {
     const msg: WorkerRequest = event.data;
     let mod: WebAssembly.Module;
     try {
-        mod = await compileIfNecessary(msg.program);
+        mod = await compileIfNecessary(msg.program, msg.options);
     } catch (e) {
         postStatus({ status: ProgramStatus.compileError, output: "" + e, });
         return;
@@ -21,13 +21,13 @@ addEventListener("message", async event => {
 
 postMessage("ready");
 
-async function compileIfNecessary(program: WorkerProgram): Promise<WebAssembly.Module> {
+async function compileIfNecessary(program: WorkerProgram, options: CompilerOptions): Promise<WebAssembly.Module> {
     if (program instanceof WebAssembly.Module) {
         return program;
     }
     postStatus({ status: ProgramStatus.compiling, output: "", });
     await wasm_bindgen(program.bfMod);
-    const mod = await compileBrainfuckToModule(program.text);
+    const mod = await compileBrainfuckToModule(program.text, options);
     postStatus({ status: ProgramStatus.compiled, output: "", mod })
     return mod;
 }

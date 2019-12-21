@@ -6,6 +6,10 @@ const outputArea = document.querySelector("#output") as HTMLTextAreaElement;
 
 const runButton = document.querySelector("#run") as HTMLButtonElement;
 const stopButton = document.querySelector("#stop") as HTMLButtonElement;
+
+const cellSize = document.querySelector("#cell-size") as HTMLSelectElement;
+const cellArraySize = document.querySelector("#array-size") as HTMLInputElement;
+
 const zeroEof = document.querySelector("#zero") as HTMLInputElement;
 const negOneEof = document.querySelector("#neg-one") as HTMLInputElement;
 
@@ -17,6 +21,16 @@ let cached = false;
 let currentWorker: defs.WorkerWrapper;
 
 programArea.addEventListener("input", _ => {
+    cached = false;
+    statusDiv.innerText = "Ready";
+});
+
+cellSize.addEventListener("input", _ => {
+    cached = false;
+    statusDiv.innerText = "Ready";
+});
+
+cellArraySize.addEventListener("input", _ => {
     cached = false;
     statusDiv.innerText = "Ready";
 });
@@ -62,6 +76,10 @@ runButton.addEventListener("click", _ => withEverythingDisabled(async () => {
         cached ? moduleCache : programArea.value,
         inputArea.value,
         zeroEof.checked ? 0 : -1,
+        {
+            cellSize: Number.parseInt(cellSize.value),
+            numCells: Number.parseInt(cellArraySize.value),
+        },
         {
             updateUi: (status, output) => {
                 statusDiv.innerText = (s => {

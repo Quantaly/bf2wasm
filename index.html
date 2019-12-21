@@ -25,9 +25,23 @@
             </div>
             <div class="area-controls">
                 <div class="controls-buttons">
-                    <button id="run">Run</button>
-                    <button id="stop" disabled>Stop</button>
-                    <!--TODO allow user to specify cell + array sizes-->
+                    <span>
+                        <button id="run">Run</button>
+                        <button id="stop" disabled>Stop</button>
+                    </span>
+                    <span>
+                        <label for="cell-size">Cell size (bits):</label>
+                        <select id="cell-size">
+                            <option value="8">8</option>
+                            <option value="16">16</option>
+                            <option value="32" selected>32</option>
+                            <option value="64">64</option>
+                        </select>
+                    </span>
+                    <span>
+                        <label for="array-size">Cell array size (minimum):</label>
+                        <input type="number" id="array-size" min="1" value="32768">
+                    </span>
                 </div>
                 <div class="controls-status">Ready</div>
             </div>

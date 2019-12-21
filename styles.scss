@@ -89,6 +89,11 @@ main {
         grid-template-columns: auto auto;
         grid-template-areas: "controls-buttons controls-status";
     }
+
+    span {
+        margin: 0.25em;
+        display: inline-block;
+    }
 }
 
 .area-input {

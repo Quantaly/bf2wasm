@@ -3,6 +3,7 @@ interface WorkerRequest {
     readonly program: WorkerProgram,
     readonly input: string,
     readonly afterEmpty: number,
+    readonly options: CompilerOptions,
 }
 
 /// Represents a program and/or the means to compile it.
