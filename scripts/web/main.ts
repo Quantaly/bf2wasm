@@ -52,6 +52,8 @@ function disableEverything() {
     inputArea.disabled = true;
     runButton.disabled = true;
     stopButton.disabled = false;
+    cellSize.disabled = true;
+    cellArraySize.disabled = true;
 }
 
 function enableEverything() {
@@ -59,6 +61,8 @@ function enableEverything() {
     inputArea.disabled = false;
     runButton.disabled = false;
     stopButton.disabled = true;
+    cellSize.disabled = false;
+    cellArraySize.disabled = false;
 }
 
 async function withEverythingDisabled<T>(run: () => Promise<T>): Promise<T> {
