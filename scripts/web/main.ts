@@ -54,6 +54,8 @@ function disableEverything() {
     stopButton.disabled = false;
     cellSize.disabled = true;
     cellArraySize.disabled = true;
+    zeroEof.disabled = true;
+    negOneEof.disabled = true;
 }
 
 function enableEverything() {
@@ -63,6 +65,8 @@ function enableEverything() {
     stopButton.disabled = true;
     cellSize.disabled = false;
     cellArraySize.disabled = false;
+    zeroEof.disabled = false;
+    negOneEof.disabled = false;
 }
 
 async function withEverythingDisabled<T>(run: () => Promise<T>): Promise<T> {
