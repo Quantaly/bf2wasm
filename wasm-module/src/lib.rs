@@ -6,6 +6,7 @@ pub fn compile_brainfuck(
     program: &str,
     num_cells: u32,
     cell_size: u32,
+    eof: i32,
 ) -> Result<Vec<u8>, JsValue> {
     if num_cells == 0 {
         return Err(JsValue::from_str("num_cells cannot be 0"));
@@ -19,7 +20,13 @@ pub fn compile_brainfuck(
         _ => return Err(JsValue::from_str("cell_size must be one of 8, 16, 32, 64")),
     };
 
-    let ast = match compiler::parse(&mut program.as_bytes()) {
+    let eof = match eof {
+        0 => compiler::EOFBehavior::Zero,
+        -1 => compiler::EOFBehavior::NegOne,
+        _ => compiler::EOFBehavior::NoChange,
+    };
+
+    let ast = match compiler::parse_and_optimize(&mut program.as_bytes()) {
         Ok(ast) => ast,
         Err(e) => return Err(JsValue::from_str(&format!("{}", e))),
     };
@@ -31,6 +38,7 @@ pub fn compile_brainfuck(
         &compiler::CompilerOptions {
             num_cells,
             cell_size,
+            eof
         },
         &mut ret,
     ) {

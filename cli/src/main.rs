@@ -1,6 +1,6 @@
 use compiler;
 use compiler::parser::ParseError;
-use compiler::{CellSize, CompilerOptions};
+use compiler::{CellSize, CompilerOptions, EOFBehavior};
 use exitcode;
 use std::fs::File;
 use std::io;
@@ -27,6 +27,11 @@ struct Cli {
     ///
     /// Defaults to 32.
     cell_size: Option<CellSize>,
+    #[structopt(short = "e", long, parse(try_from_str = try_parse_eof))]
+    /// The program's behavior on an EOF condition - one of "no-change", "0", "-1"
+    ///
+    /// An EOF is defined as attempting to read any value higher than 255 unsigned. Defaults to "no-change".
+    eof: Option<EOFBehavior>,
 }
 
 fn try_parse_cell_size(src: &str) -> Result<CellSize, String> {
@@ -41,6 +46,21 @@ fn try_parse_cell_size(src: &str) -> Result<CellSize, String> {
     } else {
         Err(format!(
             "invalid cell size {}: must be one of 8, 16, 32, 64",
+            src
+        ))
+    }
+}
+
+fn try_parse_eof(src: &str) -> Result<EOFBehavior, String> {
+    if src == "no-change" {
+        Ok(EOFBehavior::NoChange)
+    } else if src == "0" {
+        Ok(EOFBehavior::Zero)
+    } else if src == "-1" {
+        Ok(EOFBehavior::NegOne)
+    } else {
+        Err(format!(
+            "invalid EOF behavior {}: must be one of no-change, 0, -1",
             src
         ))
     }
@@ -83,7 +103,7 @@ fn _main() -> i32 {
         }
     };
 
-    let ast = match compiler::parse(&mut io::BufReader::new(infile)) {
+    let ast = match compiler::parse_and_optimize(&mut io::BufReader::new(infile)) {
         Ok(ast) => ast,
         Err(e) => {
             eprintln!("{}", e);
@@ -100,6 +120,7 @@ fn _main() -> i32 {
         &CompilerOptions {
             num_cells: opt.num_cells.unwrap_or(default_options.num_cells),
             cell_size: opt.cell_size.unwrap_or(default_options.cell_size),
+            eof: opt.eof.unwrap_or(default_options.eof),
         },
         &mut io::BufWriter::new(outfile),
     ) {

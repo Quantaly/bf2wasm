@@ -17,8 +17,22 @@ pub fn i32_add() -> [u8; 1] {
     [0x6a]
 }
 
+pub fn i32_eqz() -> [u8; 1] {
+    [0x45]
+}
+
+pub fn i32_and() -> [u8; 1] {
+    [0x71]
+}
+
 pub fn local_set(x: u32) -> Vec<u8> {
     let mut ret = vec![0x21];
+    ret.append(&mut u32_leb128(x));
+    ret
+}
+
+pub fn local_tee(x: u32) -> Vec<u8> {
+    let mut ret = vec![0x22];
     ret.append(&mut u32_leb128(x));
     ret
 }
@@ -71,6 +85,10 @@ pub fn wasm_if(rt: BlockType) -> [u8; 2] {
     [0x04, rt.code()]
 }
 
+pub fn wasm_else() -> [u8; 1] {
+    [0x05]
+}
+
 pub fn br(l: u32) -> Vec<u8> {
     let mut ret = vec![0x0c];
     ret.append(&mut u32_leb128(l));
@@ -88,8 +106,8 @@ pub trait SizeDependentInstructions {
     fn isz_store(&self) -> Vec<u8>;
     /// Hey, did you know that `if`s and stuff in Wasm only accept `i32`s and not `i64`s?
     fn ne_zero(&self) -> Vec<u8>;
-    fn isz_to_i32(&self) -> Vec<u8>;
-    fn i32_to_isz(&self) -> Vec<u8>;
+    fn isz_to_i8(&self) -> Vec<u8>;
+    fn i8_to_isz(&self) -> Vec<u8>;
 }
 
 impl SizeDependentInstructions for CellSize {
@@ -149,14 +167,26 @@ impl SizeDependentInstructions for CellSize {
         }
     }
 
-    fn isz_to_i32(&self) -> Vec<u8> {
+    fn isz_to_i8(&self) -> Vec<u8> {
+        let mut ret = vec![];
         match self {
-            CellSize::I64 => vec![0xa7], // i32.wrap_i64
-            _ => vec![],
+            CellSize::I64 => {
+                ret.push(0xa7); // i32.wrap_i64
+            },
+            _ => {}
         }
+        match self {
+            CellSize::I8 => {}
+            _ => {
+                ret.push(0x41); // i32.const
+                ret.append(&mut i32_leb128(0xff));
+                ret.push(0x71); // i32.and
+            }
+        }
+        ret
     }
 
-    fn i32_to_isz(&self) -> Vec<u8> {
+    fn i8_to_isz(&self) -> Vec<u8> {
         match self {
             CellSize::I64 => vec![0xad], // i64.extend_i32_u
             _ => vec![],
