@@ -101,11 +101,12 @@ function compileIfNecessary(program, options) {
         if (program instanceof WebAssembly.Module) {
             return program;
         }
-        postStatus({ status: 0, output: "", });
-        yield wasm_bindgen(program.bfMod);
-        const mod = yield compileBrainfuckToModule(program.text, options);
-        postStatus({ status: 1, output: "", mod });
-        return mod;
+        else {
+            postStatus({ status: 0, output: "", });
+            const mod = yield compileBrainfuckToModule(program, options);
+            postStatus({ status: 1, output: "", mod });
+            return mod;
+        }
     });
 }
 function postStatus(status) {

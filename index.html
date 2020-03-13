@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="styles.css">
     <title>Brainfuck-WASM</title>
     <script type="module" src="scripts/web/main.js"></script>
+    <link rel="preload" href="scripts/worker/main.js" as="worker" type="application/javascript">
+    <link rel="preload" href="scripts/worker/js-lib/wasm/wasm_module.js" as="script" type="application/javascript">
+    <link rel="preload" href="scripts/worker/js-lib/wasm/wasm_module_bg.wasm" as="fetch" type="application/wasm">
 </head>
 
 <body>

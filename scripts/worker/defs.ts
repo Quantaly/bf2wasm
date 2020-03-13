@@ -6,7 +6,7 @@ interface WorkerRequest {
 }
 
 /// Represents a program and/or the means to compile it.
-type WorkerProgram = { text: string, bfMod: WebAssembly.Module } | WebAssembly.Module;
+type WorkerProgram = string | WebAssembly.Module;
 
 /// The possible statuses of a running program.
 const enum ProgramStatus {

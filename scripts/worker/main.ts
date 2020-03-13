@@ -24,12 +24,12 @@ postMessage("ready");
 async function compileIfNecessary(program: WorkerProgram, options: CompilerOptions): Promise<WebAssembly.Module> {
     if (program instanceof WebAssembly.Module) {
         return program;
+    } else {
+        postStatus({ status: ProgramStatus.compiling, output: "", });
+        const mod = await compileBrainfuckToModule(program, options);
+        postStatus({ status: ProgramStatus.compiled, output: "", mod });
+        return mod;
     }
-    postStatus({ status: ProgramStatus.compiling, output: "", });
-    await wasm_bindgen(program.bfMod);
-    const mod = await compileBrainfuckToModule(program.text, options);
-    postStatus({ status: ProgramStatus.compiled, output: "", mod })
-    return mod;
 }
 
 function postStatus(status: WorkerStatus) {

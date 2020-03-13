@@ -1,4 +1,3 @@
-const bfModPromise = WebAssembly.compileStreaming(fetch("./scripts/worker/js-lib/wasm/wasm_module_bg.wasm"));
 export class WorkerWrapper {
     constructor(program, input, options, callbacks) {
         this.resolveEnded = () => { };
@@ -19,16 +18,8 @@ export class WorkerWrapper {
                     this.resolveEnded();
                 }
             });
-            if (program instanceof WebAssembly.Module) {
-                const msg = { program, input, options };
-                this.worker.postMessage(msg);
-            }
-            else {
-                bfModPromise.then(bfMod => {
-                    const msg = { program: { text: program, bfMod }, input, options };
-                    this.worker.postMessage(msg);
-                });
-            }
+            const msg = { program, input, options };
+            this.worker.postMessage(msg);
         }, { once: true });
     }
     get ended() {

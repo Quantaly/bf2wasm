@@ -14,7 +14,7 @@ interface CompilerOptions {
 }
 
 /// Represents a program and/or the means to compile it.
-export type WorkerProgram = { text: string, bfMod: WebAssembly.Module } | WebAssembly.Module;
+export type WorkerProgram = string | WebAssembly.Module;
 
 /// The possible statuses of a running program.
 export const enum ProgramStatus {
@@ -33,8 +33,6 @@ interface WorkerCallbacks {
     updateUi: (status: ProgramStatus, output: string) => void,
     cacheModule: (mod: WebAssembly.Module) => void,
 }
-
-const bfModPromise = WebAssembly.compileStreaming(fetch("./scripts/worker/js-lib/wasm/wasm_module_bg.wasm"));
 
 /// Wraps the functionality of the worker, exposing events and handling cleanup.
 export class WorkerWrapper {
@@ -61,15 +59,8 @@ export class WorkerWrapper {
                     this.resolveEnded();
                 }
             });
-            if (program instanceof WebAssembly.Module) {
-                const msg: WorkerRequest = { program, input, options };
-                this.worker.postMessage(msg);
-            } else {
-                bfModPromise.then(bfMod => {
-                    const msg: WorkerRequest = { program: { text: program, bfMod }, input, options };
-                    this.worker.postMessage(msg);
-                });
-            }
+            const msg: WorkerRequest = { program, input, options };
+            this.worker.postMessage(msg);
         }, { once: true });
     }
 
