@@ -1,25 +1,41 @@
 import init, { compile_brainfuck } from "./wasm/wasm_module.js";
 
-const initPromise = init();
+const initPromise = init(fetch("./wasm/wasm_module_bg.wasm"));
+
+type EOFBehavior = "no-change" | "0" | "-1";
 
 interface CompilerOptions {
     numCells?: number,
     cellSize?: number,
+    eof?: EOFBehavior,
 }
 
 interface CanonicalOptions {
     numCells: number,
     cellSize: number,
+    eof: EOFBehavior,
+}
+
+function quantifyEOF(eof: EOFBehavior): number {
+    switch (eof) {
+        case "0":
+            return 0;
+        case "-1":
+            return -1;
+        default:
+            return 1;
+    }
 }
 
 function canonicalOptions(options: CompilerOptions | undefined): CanonicalOptions {
     if (options === undefined) {
-        return { numCells: 32768, cellSize: 32 };
+        return { numCells: 32768, cellSize: 32, eof: "no-change" };
     } else {
         return {
-            numCells: options.numCells === undefined ? 32768 : options.numCells,
-            cellSize: options.cellSize === undefined ? 32 : options.cellSize,
-        }
+            numCells: options.numCells ?? 32768,
+            cellSize: options.cellSize ?? 32,
+            eof: options.eof ?? "no-change",
+        };
     }
 }
 
@@ -31,7 +47,7 @@ function canonicalOptions(options: CompilerOptions | undefined): CanonicalOption
 export async function compileBrainfuck(program: string, options?: CompilerOptions): Promise<Uint8Array> {
     await initPromise;
     const canon = canonicalOptions(options);
-    return compile_brainfuck(program, canon.numCells, canon.cellSize);
+    return compile_brainfuck(program, canon.numCells, canon.cellSize, quantifyEOF(canon.eof));
 }
 
 /**
