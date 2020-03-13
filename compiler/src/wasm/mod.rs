@@ -151,6 +151,7 @@ fn emit_func_body(
                 output.write_all(&end())?;
                 output.write_all(&end())?;
             }
+            NoOp => {}
         }
     }
     Ok(())
