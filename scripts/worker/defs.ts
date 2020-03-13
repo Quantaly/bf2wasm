@@ -2,7 +2,6 @@
 interface WorkerRequest {
     readonly program: WorkerProgram,
     readonly input: string,
-    readonly afterEmpty: number,
     readonly options: CompilerOptions,
 }
 

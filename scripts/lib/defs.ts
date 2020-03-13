@@ -2,13 +2,15 @@
 export interface WorkerRequest {
     readonly program: WorkerProgram,
     readonly input: string,
-    readonly afterEmpty: number,
     readonly options: CompilerOptions,
 }
+
+type EOFBehavior = "no-change" | "0" | "-1";
 
 interface CompilerOptions {
     numCells?: number,
     cellSize?: number,
+    eof: EOFBehavior,
 }
 
 /// Represents a program and/or the means to compile it.
@@ -41,7 +43,7 @@ export class WorkerWrapper {
     private _ended: Promise<void>;
     private resolveEnded: () => void = () => { };
 
-    constructor(program: string | WebAssembly.Module, input: string, afterEmpty: number, options: CompilerOptions, callbacks: WorkerCallbacks) {
+    constructor(program: string | WebAssembly.Module, input: string, options: CompilerOptions, callbacks: WorkerCallbacks) {
         this.worker = new Worker("scripts/worker/main.js");
         this.callbacks = callbacks;
         this._ended = new Promise((resolve, _) => this.resolveEnded = resolve);
@@ -60,11 +62,11 @@ export class WorkerWrapper {
                 }
             });
             if (program instanceof WebAssembly.Module) {
-                const msg: WorkerRequest = { program, input, afterEmpty, options };
+                const msg: WorkerRequest = { program, input, options };
                 this.worker.postMessage(msg);
             } else {
                 bfModPromise.then(bfMod => {
-                    const msg: WorkerRequest = { program: { text: program, bfMod }, input, afterEmpty, options };
+                    const msg: WorkerRequest = { program: { text: program, bfMod }, input, options };
                     this.worker.postMessage(msg);
                 });
             }

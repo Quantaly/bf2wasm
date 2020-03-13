@@ -72,11 +72,12 @@
     * @param {string} program
     * @param {number} num_cells
     * @param {number} cell_size
+    * @param {number} eof
     * @returns {Uint8Array}
     */
-    __exports.compile_brainfuck = function(program, num_cells, cell_size) {
+    __exports.compile_brainfuck = function(program, num_cells, cell_size, eof) {
         const retptr = 8;
-        const ret = wasm.compile_brainfuck(retptr, passStringToWasm(program), WASM_VECTOR_LEN, num_cells, cell_size);
+        const ret = wasm.compile_brainfuck(retptr, passStringToWasm(program), WASM_VECTOR_LEN, num_cells, cell_size, eof);
         const memi32 = getInt32Memory();
         const v0 = getArrayU8FromWasm(memi32[retptr / 4 + 0], memi32[retptr / 4 + 1]).slice();
         wasm.__wbindgen_free(memi32[retptr / 4 + 0], memi32[retptr / 4 + 1] * 1);

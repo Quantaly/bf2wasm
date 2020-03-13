@@ -10,6 +10,7 @@ const stopButton = document.querySelector("#stop") as HTMLButtonElement;
 const cellSize = document.querySelector("#cell-size") as HTMLSelectElement;
 const cellArraySize = document.querySelector("#array-size") as HTMLInputElement;
 
+const noChangeEof = document.querySelector("#no-change") as HTMLInputElement;
 const zeroEof = document.querySelector("#zero") as HTMLInputElement;
 const negOneEof = document.querySelector("#neg-one") as HTMLInputElement;
 
@@ -22,29 +23,36 @@ let currentWorker: defs.WorkerWrapper;
 
 programArea.addEventListener("input", _ => {
     cached = false;
-    statusDiv.innerText = "Ready";
+    statusDiv.textContent = "Ready";
 });
 
 cellSize.addEventListener("input", _ => {
     cached = false;
-    statusDiv.innerText = "Ready";
+    statusDiv.textContent = "Ready";
 });
 
 cellArraySize.addEventListener("input", _ => {
     cached = false;
-    statusDiv.innerText = "Ready";
+    statusDiv.textContent = "Ready";
 });
 
 inputArea.addEventListener("input", _ => {
-    statusDiv.innerText = "Ready";
+    statusDiv.textContent = "Ready";
+});
+
+noChangeEof.addEventListener("input", _ => {
+    cached = false;
+    statusDiv.textContent = "Ready";
 });
 
 zeroEof.addEventListener("input", _ => {
-    statusDiv.innerText = "Ready";
+    cached = false;
+    statusDiv.textContent = "Ready";
 });
 
 negOneEof.addEventListener("input", _ => {
-    statusDiv.innerText = "Ready";
+    cached = false;
+    statusDiv.textContent = "Ready";
 });
 
 function disableEverything() {
@@ -54,6 +62,7 @@ function disableEverything() {
     stopButton.disabled = false;
     cellSize.disabled = true;
     cellArraySize.disabled = true;
+    noChangeEof.disabled = true;
     zeroEof.disabled = true;
     negOneEof.disabled = true;
 }
@@ -65,6 +74,7 @@ function enableEverything() {
     stopButton.disabled = true;
     cellSize.disabled = false;
     cellArraySize.disabled = false;
+    noChangeEof.disabled = false;
     zeroEof.disabled = false;
     negOneEof.disabled = false;
 }
@@ -83,14 +93,14 @@ runButton.addEventListener("click", _ => withEverythingDisabled(async () => {
     currentWorker = new defs.WorkerWrapper(
         cached ? moduleCache : programArea.value,
         inputArea.value,
-        zeroEof.checked ? 0 : -1,
         {
             cellSize: Number.parseInt(cellSize.value),
             numCells: Number.parseInt(cellArraySize.value),
+            eof: noChangeEof.checked ? "no-change" : negOneEof.checked ? "-1" : zeroEof.checked ? "0" : "no-change",
         },
         {
             updateUi: (status, output) => {
-                statusDiv.innerText = (s => {
+                statusDiv.textContent = (s => {
                     switch (s) {
                         case defs.ProgramStatus.compiling:
                             return "Compiling...";

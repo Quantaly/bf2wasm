@@ -11,7 +11,7 @@ addEventListener("message", async event => {
     postStatus({ status: ProgramStatus.running, output: "", });
     let output: string;
     try {
-        output = await runBrainfuckWithStringBuffers(mod, msg.input, msg.afterEmpty);
+        output = await runBrainfuckWithStringBuffers(mod, msg.input);
     } catch (e) {
         postStatus({ status: ProgramStatus.runtimeError, output: "" + e });
         return;
