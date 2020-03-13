@@ -148,43 +148,14 @@ fn test_empty() -> Result<(), ParseError> {
     Ok(())
 }
 
-const INC_POINTER: u8 = 0x3e; // '>'
-const DEC_POINTER: u8 = 0x3c; // '<'
-const INC_VALUE: u8 = 0x2b; // '+'
-const DEC_VALUE: u8 = 0x2d; // '-'
-const OUTPUT: u8 = 0x2e; // '.'
-const INPUT: u8 = 0x2c; // ','
-const BEGIN_LOOP: u8 = 0x5b; // '['
-const END_LOOP: u8 = 0x5d; // ']'
-
-#[test]
-fn character_codes_correct() {
-    let mut char_buf = [0u8; 1];
-
-    '>'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], INC_POINTER);
-
-    '<'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], DEC_POINTER);
-
-    '+'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], INC_VALUE);
-
-    '-'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], DEC_VALUE);
-
-    '.'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], OUTPUT);
-
-    ','.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], INPUT);
-
-    '['.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], BEGIN_LOOP);
-
-    ']'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], END_LOOP);
-}
+const INC_POINTER: u8 = b'>';
+const DEC_POINTER: u8 = b'<';
+const INC_VALUE: u8 = b'+';
+const DEC_VALUE: u8 = b'-';
+const OUTPUT: u8 = b'.';
+const INPUT: u8 = b',';
+const BEGIN_LOOP: u8 = b'[';
+const END_LOOP: u8 = b']';
 
 /// The inner parsing logic for a Brainfuck program.
 ///
