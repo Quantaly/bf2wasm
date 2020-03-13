@@ -1,7 +1,7 @@
 mod instr;
 
 use super::BrainfuckSyntax::*;
-use super::{BrainfuckSyntax, CellSize, CompilerOptions};
+use super::{BrainfuckSyntax, EOFBehavior, CompilerOptions};
 use instr::*;
 use leb128;
 use std::convert::{TryFrom, TryInto};
@@ -47,13 +47,6 @@ const FUNCTION_SECTION: &'static [u8] = &[
     0x02, // type 2
 ];
 
-/* memory section */
-//0x05, // id
-//0x04, // byte length
-//0x01, // vec length
-// memory 0
-//0x01, 0x01, 0x01, // min 1, max 1
-
 const START_SECTION: &'static [u8] = &[
     0x08, // id
     0x01, // byte length
@@ -88,9 +81,9 @@ pub fn compile_wasm(
     /* code section */
     let mut func = vec![
         0x01, // locals vector length
-        0x01, 0x7f, // one local of type i32
+        0x02, 0x7f, // two locals of type i32
     ];
-    emit_func_body(&ast, &options.cell_size, &mut func)?;
+    emit_func_body(&ast, &options, &mut func)?;
     func.push(end()[0]);
     let func_len = u32_leb128(func.len().try_into().unwrap());
 
@@ -107,15 +100,17 @@ pub fn compile_wasm(
 
 fn emit_func_body(
     ast: &Vec<BrainfuckSyntax>,
-    sz: &CellSize,
+    options: &CompilerOptions,
     output: &mut impl Write,
 ) -> io::Result<()> {
+    let sz = &options.cell_size;
+    let eof = &options.eof;
     for syntax in ast {
         match syntax {
             MovePointer(value) => {
                 output.write_all(&local_get(0))?;
                 output.write_all(&i32_const(
-                    (*value) * i32::try_from(sz.byte_length()).unwrap(), // stay aligned - we know this will work, largest byte_length is 8 (fits in an i32)
+                    (*value) * i32::try_from(sz.byte_length()).unwrap(), // stay aligned - we know the unwrap will work, largest byte_length is 8 (fits in an i32)
                 ))?;
                 output.write_all(&i32_add())?;
                 output.write_all(&local_set(0))?;
@@ -131,14 +126,36 @@ fn emit_func_body(
             Output => {
                 output.write_all(&local_get(0))?;
                 output.write_all(&sz.isz_load())?;
-                output.write_all(&sz.isz_to_i32())?;
+                output.write_all(&sz.isz_to_i8())?;
                 output.write_all(&call(1))?; // <io.write_value>
             }
             Input => {
-                output.write_all(&local_get(0))?;
                 output.write_all(&call(0))?; // <io.read_value>
-                output.write_all(&sz.i32_to_isz())?;
+                output.write_all(&local_tee(1))?;
+                output.write_all(&i32_const(-256))?; // 0xFF_FF_FF_00
+                output.write_all(&i32_and())?;
+                output.write_all(&i32_eqz())?;
+                output.write_all(&wasm_if(BlockType::Void))?;
+                output.write_all(&local_get(0))?;
+                output.write_all(&local_get(1))?;
+                output.write_all(&sz.i8_to_isz())?;
                 output.write_all(&sz.isz_store())?;
+                match eof {
+                    EOFBehavior::NoChange => {}
+                    EOFBehavior::Zero => {
+                        output.write_all(&wasm_else())?;
+                        output.write_all(&local_get(0))?;
+                        output.write_all(&sz.isz_const(0))?;
+                        output.write_all(&sz.isz_store())?;
+                    }
+                    EOFBehavior::NegOne => {
+                        output.write_all(&wasm_else())?;
+                        output.write_all(&local_get(0))?;
+                        output.write_all(&sz.isz_const(-1))?;
+                        output.write_all(&sz.isz_store())?;
+                    }
+                }
+                output.write_all(&end())?;
             }
             Loop(contents) => {
                 output.write_all(&wasm_loop(BlockType::Void))?;
@@ -146,11 +163,12 @@ fn emit_func_body(
                 output.write_all(&sz.isz_load())?;
                 output.write_all(&sz.ne_zero())?;
                 output.write_all(&wasm_if(BlockType::Void))?;
-                emit_func_body(contents, sz, output)?;
+                emit_func_body(contents, options, output)?;
                 output.write_all(&br(1))?;
                 output.write_all(&end())?;
                 output.write_all(&end())?;
             }
+            NoOp => {}
         }
     }
     Ok(())

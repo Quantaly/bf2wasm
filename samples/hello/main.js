@@ -3,11 +3,10 @@ window.addEventListener("load", async _ => {
     const read_value = () => -1;
     const write_value = (i32) => charbuf.push(i32);
 
-    const mod = await WebAssembly.compileStreaming(fetch("hello.wasm"));
-    await WebAssembly.instantiate(mod, { io: { read_value, write_value } });
+    await WebAssembly.instantiateStreaming(fetch("hello.wasm"), { io: { read_value, write_value } });
     console.log(charbuf);
-    let result = "";
-    charbuf.forEach(code => result += String.fromCharCode(code));
+    const decoder = new TextDecoder("utf-8");
+    const result = decoder.decode(new Uint8Array(charbuf));
     console.log(result);
     console.log("done");
 });

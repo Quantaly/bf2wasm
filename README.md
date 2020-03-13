@@ -12,8 +12,6 @@ By default, the cell array can hold 32,768 32-bit integers. This can be changed 
 
 Incrementing a cell's value above the maximum or decrementing below the minimum causes the value to wrap.
 
-No matter the cell size, the `.` command will only output up to the least significant 32 bits of the cell value and the `,` command will accept 32 bits of input, wrapped or zero-extended to the cell size if necessary.
-
-This compiler does not define any behavior related to EOF conditions. The `,` command directly calls the imported `io.read_value` function and places its return value in the cell at the pointer. Therefore, any EOF behavior must be defined by the external implementation of `io.read_value`.
+No matter the cell size, the `.` command will only output the least significant 8 bits of the cell value, zero-padded to an `i32`. Likewise, the `,` command will only accept 8 bits of input; if any bit higher than the 8th is set (i.e. greater than 255 unsigned), it is interpreted as an EOF. By default, an EOF leaves the value in the cell unchanged; this behavior can be customized at compile time with the `--eof` option.
 
 It is also technically possible, when using `--cell-size=64` and a sufficiently low `--num-cells`, to end up with a cell array smaller than Raiter's minimum length of 9999. Because it takes a very specific conjunction of compiler options to reach this state, it can be considered intentional. Consider this your warning, if you must; you reap what you sow.

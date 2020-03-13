@@ -6,47 +6,35 @@ export async function runBrainfuckWithCallbacks(mod: WebAssembly.Module, readCal
 }
 
 /** 
- * Runs the provided module, using `readBuffer` as a source for input. Once all of the values are read, `afterEmpty` is used as input.
+ * Runs the provided module, using `readBuffer` as a source for input and reading EOFs after it is exhausted.
  * 
- * Output is collected into an array of `Number`s.
+ * Output is collected into a `Uint8Array`.
  */
-export async function runBrainfuckWithBuffers(mod: WebAssembly.Module, readBuffer: number[], afterEmpty: number): Promise<number[]> {
+export async function runBrainfuckWithBuffers(mod: WebAssembly.Module, readBuffer: Uint8Array | number[]): Promise<Uint8Array> {
     let bufferPos = 0;
     const read_value = () => {
         if (bufferPos < readBuffer.length) {
             return readBuffer[bufferPos++];
         } else {
-            return afterEmpty;
+            return -1;
         }
-    }
+    };
 
     const ret: number[] = [];
     const write_value = (i32: number) => ret.push(i32);
 
     await WebAssembly.instantiate(mod, { io: { read_value, write_value } });
 
-    return ret;
+    return new Uint8Array(ret);
 }
 
 /**
- * Runs the provided module, using `readBuffer` as a source for input. Once all of the characters are read, `afterEmpty` is used as input.
+ * Runs the provided module, using `readString`'s UTF-8 representation as input and reading EOFs after it is exhausted.
  * 
- * Output is collected into a `String`.
+ * Output is encoded into a `String` using UTF-8.
  */
-export async function runBrainfuckWithStringBuffers(mod: WebAssembly.Module, readBuffer: string, afterEmpty: number): Promise<string> {
-    let bufferPos = 0;
-    const read_value = () => {
-        if (bufferPos < readBuffer.length) {
-            return readBuffer.charCodeAt(bufferPos++)
-        } else {
-            return afterEmpty;
-        }
-    }
-
-    let ret = "";
-    const write_value = (i32: number) => ret += String.fromCharCode(i32);
-
-    await WebAssembly.instantiate(mod, { io: { read_value, write_value } });
-
-    return ret;
+export async function runBrainfuckWithStringBuffers(mod: WebAssembly.Module, readString: string): Promise<string> {
+    const readBuffer = new TextEncoder().encode(readString);
+    const output = await runBrainfuckWithBuffers(mod, readBuffer);
+    return new TextDecoder("utf-8").decode(output);
 }

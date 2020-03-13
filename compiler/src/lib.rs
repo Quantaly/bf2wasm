@@ -1,8 +1,12 @@
+pub mod optimizer;
 pub mod parser;
 pub mod wasm;
 
+pub use optimizer::optimize;
 pub use parser::parse;
 pub use wasm::compile_wasm;
+
+use std::io::Read;
 
 /// Elements of Brainfuck's syntax.
 #[derive(Debug, PartialEq)]
@@ -17,6 +21,8 @@ pub enum BrainfuckSyntax {
     Input,
     /// Represents a `[`, its matching `]`, and all commands in between.
     Loop(Vec<BrainfuckSyntax>),
+    /// A "synthetic" piece of syntax with no counterpart in Brainfuck, used by the optimizer to simplify removing syntax.
+    NoOp,
 }
 
 /// If this test fails, all the rest are pretty (brain)fucking useless.
@@ -37,6 +43,8 @@ pub struct CompilerOptions {
     pub num_cells: u32,
     /// The size of each cell and the range of values they can store.
     pub cell_size: CellSize,
+    /// The behavior of the program when it receives an EOF value.
+    pub eof: EOFBehavior,
 }
 
 impl Default for CompilerOptions {
@@ -44,6 +52,7 @@ impl Default for CompilerOptions {
         CompilerOptions {
             num_cells: 32_768,
             cell_size: CellSize::I32,
+            eof: EOFBehavior::NoChange,
         }
     }
 }
@@ -70,4 +79,20 @@ impl CellSize {
             CellSize::I64 => 8,
         }
     }
+}
+
+/// The behavior of the program when it requests input and recieves an EOF (i.e. a value greater than 255 unsigned).
+#[derive(Debug)]
+pub enum EOFBehavior {
+    NoChange,
+    Zero,
+    NegOne,
+}
+
+pub fn parse_and_optimize(
+    input: &mut impl Read,
+) -> Result<Vec<BrainfuckSyntax>, parser::ParseError> {
+    let mut ret = parse(input)?;
+    optimize(&mut ret);
+    Ok(ret)
 }

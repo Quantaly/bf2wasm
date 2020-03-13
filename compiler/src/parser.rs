@@ -11,23 +11,7 @@ pub fn parse(input: &mut impl Read) -> Result<Vec<BrainfuckSyntax>, ParseError> 
         // should absolutely EOF here
         Err(ParseError::SyntaxError(String::from("unbalanced brackets")))
     } else {
-        let mut result = inner_result.0;
-        // Optimize away initial comment loops.
-        let mut i = 0;
-        while i < result.len()
-            && match result[i] {
-                Loop(_) => true,
-                _ => false,
-            }
-        {
-            i += 1;
-        }
-        if i == 0 {
-            Ok(result)
-        } else {
-            let ret = result.split_off(i);
-            Ok(ret)
-        }
+        Ok(inner_result.0)
     }
 }
 
@@ -121,13 +105,25 @@ fn test_parsing_weird_chars() -> Result<(), ParseError> {
 }
 
 #[test]
-fn test_remove_initial_comment_loop() -> Result<(), ParseError> {
+fn test_end_with_compound_instruction() -> Result<(), ParseError> {
     use std::io::Cursor;
-    let actual = parse(&mut Cursor::new(
-        "[this loop is useless, it shouldn't be preserved.]++.",
-    ))?;
-    let expected = vec![ModifyValue(2), Output];
+
+    let actual = parse(&mut Cursor::new(">>.>>>"))?;
+    let expected = vec![MovePointer(2), Output, MovePointer(3)];
     assert_eq!(expected, actual);
+
+    let actual = parse(&mut Cursor::new("++.+++"))?;
+    let expected = vec![ModifyValue(2), Output, ModifyValue(3)];
+    assert_eq!(expected, actual);
+
+    let actual = parse(&mut Cursor::new(",-[+>,-]"))?;
+    let expected = vec![
+        Input,
+        ModifyValue(-1),
+        Loop(vec![ModifyValue(1), MovePointer(1), Input, ModifyValue(-1)]),
+    ];
+    assert_eq!(expected, actual);
+
     Ok(())
 }
 
@@ -142,49 +138,17 @@ fn test_empty() -> Result<(), ParseError> {
     let actual = parse(&mut Cursor::new("hewwo"))?;
     assert_eq!(&actual, &expected);
 
-    let actual = parse(&mut Cursor::new("[this. is. stupid.]"))?;
-    assert_eq!(&actual, &expected);
-
     Ok(())
 }
 
-const INC_POINTER: u8 = 0x3e; // '>'
-const DEC_POINTER: u8 = 0x3c; // '<'
-const INC_VALUE: u8 = 0x2b; // '+'
-const DEC_VALUE: u8 = 0x2d; // '-'
-const OUTPUT: u8 = 0x2e; // '.'
-const INPUT: u8 = 0x2c; // ','
-const BEGIN_LOOP: u8 = 0x5b; // '['
-const END_LOOP: u8 = 0x5d; // ']'
-
-#[test]
-fn character_codes_correct() {
-    let mut char_buf = [0u8; 1];
-
-    '>'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], INC_POINTER);
-
-    '<'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], DEC_POINTER);
-
-    '+'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], INC_VALUE);
-
-    '-'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], DEC_VALUE);
-
-    '.'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], OUTPUT);
-
-    ','.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], INPUT);
-
-    '['.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], BEGIN_LOOP);
-
-    ']'.encode_utf8(&mut char_buf);
-    assert_eq!(char_buf[0], END_LOOP);
-}
+const INC_POINTER: u8 = b'>';
+const DEC_POINTER: u8 = b'<';
+const INC_VALUE: u8 = b'+';
+const DEC_VALUE: u8 = b'-';
+const OUTPUT: u8 = b'.';
+const INPUT: u8 = b',';
+const BEGIN_LOOP: u8 = b'[';
+const END_LOOP: u8 = b']';
 
 /// The inner parsing logic for a Brainfuck program.
 ///
@@ -199,6 +163,13 @@ fn _parse(input: &mut impl Read) -> Result<(Vec<BrainfuckSyntax>, bool), ParseEr
     loop {
         let bytes_read = input.read(&mut current_byte)?;
         if bytes_read == 0 {
+            if let Some(instr) = current_instr.take() {
+                // this particular edge case wouldn't actually change any observable behavior.
+                // after all, if the last thing the program does isn't I/O, there's no way to know it did it.
+                // but, for completeness's sake, removing this can be left to the optimizer.
+                // besides, maybe in the future the memory will be imported/exported, and then this will be observable.
+                ret.push(instr);
+            }
             return Ok((ret, true));
         }
         match current_byte[0] {
